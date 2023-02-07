@@ -11,6 +11,54 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /login:
+    post:
+      description: Log user
+      operationId: Login
+      requestBody:
+        description: Add body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /users:
+    post:
+      description: Creates user
+      operationId: addUser
+      requestBody:
+        description: Add body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /users/{id}:
     get:
       description: Get user
@@ -42,6 +90,17 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    Login:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
     User:
       type: object
       required:
@@ -50,6 +109,16 @@ components:
         email:
           type: string
 
+    NewUser:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
 
     Error:
       type: object

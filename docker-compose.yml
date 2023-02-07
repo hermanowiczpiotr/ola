@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:15.1
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql/data/
+
+  users:
+    build: .
+    volumes:
+      - ./internal:/internal
+    ports:
+      - 3001:3001
+    environment:
+      - PORT=3001
+    working_dir: /internal/user
+    env_file:
+      - .env
+    depends_on:
+      - postgres
