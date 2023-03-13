@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/hermanowiczpiotr/ola/user/domain/entity"
+	"github.com/hermanowiczpiotr/ola/internal/user/domain/entity"
 )
 
 type UserRepository interface {

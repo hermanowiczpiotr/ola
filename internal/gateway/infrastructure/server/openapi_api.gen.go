@@ -6,22 +6,20 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth/v5"
 	"net/http"
 )
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	Verifier() func(http.Handler) http.Handler
+
+	// (POST /login)
 	Login(w http.ResponseWriter, r *http.Request)
 
-	// (POST /users)
-	AddUser(w http.ResponseWriter, r *http.Request)
+	// (POST /register)
+	RegisterUser(w http.ResponseWriter, r *http.Request)
 
-	// (GET /users/{id})
-	GetUserById(w http.ResponseWriter, r *http.Request, id string)
+	Validate(next http.Handler) http.Handler
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -50,42 +48,14 @@ func (siw *ServerInterfaceWrapper) Login(w http.ResponseWriter, r *http.Request)
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// AddUser operation middleware
-func (siw *ServerInterfaceWrapper) AddUser(w http.ResponseWriter, r *http.Request) {
+// RegisterUser operation middleware
+func (siw *ServerInterfaceWrapper) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.AddUser(w, r)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// GetUserById operation middleware
-func (siw *ServerInterfaceWrapper) GetUserById(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
-		return
-	}
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{""})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetUserById(w, r, id)
+		siw.Handler.RegisterUser(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -213,10 +183,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 
 	r.Group(func(r chi.Router) {
-		r.Use(wrapper.Handler.Verifier())
-		r.Use(jwtauth.Authenticator)
-		r.Post(options.BaseURL+"/users", wrapper.AddUser)
-		r.Get(options.BaseURL+"/users/{id}", wrapper.GetUserById)
+		r.Post(options.BaseURL+"/register", wrapper.RegisterUser)
 	})
 
 	return r

@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	"github.com/hermanowiczpiotr/ola/user/domain/entity"
-	"github.com/hermanowiczpiotr/ola/user/domain/repository"
+	"github.com/hermanowiczpiotr/ola/internal/user/domain/entity"
+	"github.com/hermanowiczpiotr/ola/internal/user/domain/repository"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
@@ -18,8 +18,8 @@ type Repositories struct {
 }
 
 func NewRepositories() *Repositories {
-	db, error := gorm.Open(postgres.Open(DSN), &gorm.Config{})
-	if error != nil {
+	db, err := gorm.Open(postgres.Open(DSN), &gorm.Config{})
+	if err != nil {
 		panic("failed to connect persistence")
 	}
 

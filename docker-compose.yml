@@ -11,7 +11,7 @@ services:
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data/
 
-  users:
+  user:
     build: .
     volumes:
       - ./internal:/internal
@@ -19,7 +19,21 @@ services:
       - 3001:3001
     environment:
       - PORT=3001
+      - GRPC_PORT=5001
     working_dir: /internal/user
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+  gateway:
+    build: .
+    volumes:
+      - ./internal:/internal
+    ports:
+      - 8080:8080
+    environment:
+      - PORT=8080
+    working_dir: /internal/gateway
     env_file:
       - .env
     depends_on:

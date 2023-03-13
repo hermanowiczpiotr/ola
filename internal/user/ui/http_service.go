@@ -1,14 +1,14 @@
-package Interface
+package ui
 
 import (
 	"errors"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"github.com/golang-jwt/jwt"
-	"github.com/hermanowiczpiotr/ola/user/application"
-	"github.com/hermanowiczpiotr/ola/user/application/command"
-	"github.com/hermanowiczpiotr/ola/user/application/query"
-	"github.com/hermanowiczpiotr/ola/user/infrastructure/server"
+	"github.com/hermanowiczpiotr/ola/internal/user/application"
+	"github.com/hermanowiczpiotr/ola/internal/user/application/command"
+	"github.com/hermanowiczpiotr/ola/internal/user/application/query"
+	"github.com/hermanowiczpiotr/ola/internal/user/infrastructure/server"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
@@ -29,25 +29,21 @@ func NewUsersHandler(ua application.UserApp, ta *jwtauth.JWTAuth) UsersHandler {
 }
 
 func (uh UsersHandler) Login(w http.ResponseWriter, r *http.Request) {
-	loginPayload := server.Login{}
+	loginPayload := Login{}
 	err := render.Decode(r, &loginPayload)
 	if err != nil {
-		if err != nil {
-			server.BadRequestError(err, w, r)
-			return
-		}
+		server.BadRequestError(err, w, r)
+		return
 	}
 
-	query := query.GetUserByEmailQuery{
+	qry := query.GetUserByEmailQuery{
 		Email: loginPayload.Email,
 	}
 
-	user, err := uh.usersApp.GetUserByEmailQueryHandler.Handle(query)
+	user, err := uh.usersApp.GetUserByEmailQueryHandler.Handle(qry)
 	if err != nil {
-		if err != nil {
-			server.BadRequestError(err, w, r)
-			return
-		}
+		server.BadRequestError(err, w, r)
+		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginPayload.Password))
@@ -65,10 +61,8 @@ func (uh UsersHandler) Login(w http.ResponseWriter, r *http.Request) {
 	_, tokenString, err := uh.tokenAuth.Encode(claims)
 
 	if err != nil {
-		if err != nil {
-			server.BadRequestError(err, w, r)
-			return
-		}
+		server.BadRequestError(err, w, r)
+		return
 	}
 
 	render.Respond(w, r, tokenString)
@@ -80,18 +74,17 @@ func (uh UsersHandler) GetUserById(w http.ResponseWriter, r *http.Request, useri
 	}
 
 	user, err := uh.usersApp.GetUserByIdQueryHandler.Handle(qry)
+
 	if err != nil {
-		if err != nil {
-			server.BadRequestError(err, w, r)
-			return
-		}
+		server.BadRequestError(err, w, r)
+		return
 	}
 
 	render.Respond(w, r, user)
 }
 
 func (uh UsersHandler) AddUser(w http.ResponseWriter, r *http.Request) {
-	newUser := server.NewUser{}
+	newUser := NewUser{}
 
 	err := render.Decode(r, &newUser)
 
@@ -123,11 +116,11 @@ func (uh UsersHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	err = uh.usersApp.AddUserCommandHandler.Handle(cmd)
 
 	if err != nil {
-		server.BadRequestError(errors.New("email is already taken"), w, r)
+		server.BadRequestError(err, w, r)
 		return
 	}
 
-	render.Respond(w, r, server.User{
+	render.Respond(w, r, User{
 		Email: newUser.Email,
 	})
 }

@@ -1,8 +1,8 @@
 package query
 
 import (
-	"github.com/hermanowiczpiotr/ola/user/domain/entity"
-	"github.com/hermanowiczpiotr/ola/user/domain/repository"
+	"github.com/hermanowiczpiotr/ola/internal/user/domain/entity"
+	"github.com/hermanowiczpiotr/ola/internal/user/domain/repository"
 )
 
 type GetUserByEmailQuery struct {
